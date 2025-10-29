@@ -1,22 +1,30 @@
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import axios from "axios";
+import { PrismaClient } from "@prisma/client";
+import authRoutes from "./src/routes/auth.js";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const prisma = new PrismaClient();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-const GITHUB_API_BASE = 'https://api.github.com';
+const GITHUB_API_BASE = "https://api.github.com";
 
 async function githubGet(path) {
   const headers = {
-    'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'GitInsights-Pro',
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "GitInsights-Pro",
   };
   if (process.env.GITHUB_TOKEN) {
     headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
@@ -26,11 +34,17 @@ async function githubGet(path) {
   return res.data;
 }
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK' });
+app.use("/auth", authRoutes);
+
+app.get("/", (req, res) => {
+  res.send("GitInsights Pro backend running");
 });
 
-app.get('/api/repos/:owner/:repo/languages', async (req, res) => {
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK" });
+});
+
+app.get("/api/repos/:owner/:repo/languages", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const data = await githubGet(`/repos/${owner}/${repo}/languages`);
@@ -38,19 +52,23 @@ app.get('/api/repos/:owner/:repo/languages', async (req, res) => {
     const result = Object.entries(data).map(([name, bytes]) => ({
       name,
       bytes,
-      percentage: Number(((bytes / total) * 100).toFixed(1))
+      percentage: Number(((bytes / total) * 100).toFixed(1)),
     }));
     res.json(result);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+    res
+      .status(e.response?.status || 500)
+      .json({ error: e.response?.data?.message || e.message });
   }
 });
 
-app.get('/api/repos/:owner/:repo/contributors', async (req, res) => {
+app.get("/api/repos/:owner/:repo/contributors", async (req, res) => {
   try {
     const { owner, repo } = req.params;
-    const data = await githubGet(`/repos/${owner}/${repo}/contributors?per_page=100&anon=false`);
-    const result = data.map(c => ({
+    const data = await githubGet(
+      `/repos/${owner}/${repo}/contributors?per_page=100&anon=false`
+    );
+    const result = data.map((c) => ({
       id: c.id,
       login: c.login,
       avatar_url: c.avatar_url,
@@ -59,20 +77,24 @@ app.get('/api/repos/:owner/:repo/contributors', async (req, res) => {
     }));
     res.json(result);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+    res
+      .status(e.response?.status || 500)
+      .json({ error: e.response?.data?.message || e.message });
   }
 });
 
-app.get('/api/repos/:owner/:repo/commits', async (req, res) => {
+app.get("/api/repos/:owner/:repo/commits", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const fourWeeksAgo = new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const since = fourWeeksAgo.toISOString();
-    const data = await githubGet(`/repos/${owner}/${repo}/commits?since=${since}&per_page=100`);
+    const data = await githubGet(
+      `/repos/${owner}/${repo}/commits?since=${since}&per_page=100`
+    );
     const byDate = {};
     for (const c of data) {
-      const date = (c.commit?.author?.date || '').slice(0, 10);
+      const date = (c.commit?.author?.date || "").slice(0, 10);
       if (!date) continue;
       byDate[date] = (byDate[date] || 0) + 1;
     }
@@ -81,16 +103,20 @@ app.get('/api/repos/:owner/:repo/commits', async (req, res) => {
       .sort((a, b) => new Date(a.date) - new Date(b.date));
     res.json(result);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+    res
+      .status(e.response?.status || 500)
+      .json({ error: e.response?.data?.message || e.message });
   }
 });
 
-app.get('/api/repos/:owner/:repo/stats', async (req, res) => {
+app.get("/api/repos/:owner/:repo/stats", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const repoInfo = await githubGet(`/repos/${owner}/${repo}`);
     const languages = await githubGet(`/repos/${owner}/${repo}/languages`);
-    const contributors = await githubGet(`/repos/${owner}/${repo}/contributors?per_page=100&anon=false`);
+    const contributors = await githubGet(
+      `/repos/${owner}/${repo}/contributors?per_page=100&anon=false`
+    );
     const result = {
       name: repoInfo.name,
       full_name: repoInfo.full_name,
@@ -109,14 +135,16 @@ app.get('/api/repos/:owner/:repo/stats', async (req, res) => {
     };
     res.json(result);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+    res
+      .status(e.response?.status || 500)
+      .json({ error: e.response?.data?.message || e.message });
   }
 });
 
 app.use((err, req, res, next) => {
-  res.status(500).json({ error: 'Internal server error' });
+  console.error("Error:", err);
+  res.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`API listening on :${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
