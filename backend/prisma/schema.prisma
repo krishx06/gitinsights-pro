@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  githubId     Int      @unique
+  username     String   @unique
+  email        String
+  avatarUrl    String?  @db.Text
+  accessToken  String   @db.Text
+  refreshToken String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  repositories Repository[]
+  sessions     Session[]
+
+  @@index([githubId])
+  @@index([username])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model Repository {
+  id           String    @id @default(cuid())
+  githubId     Int       @unique
+  name         String    @db.VarChar(255)
+  fullName     String    @db.VarChar(255)
+  ownerId      String
+  description  String?   @db.Text
+  language     String?   @db.VarChar(100)
+  stars        Int       @default(0)
+  forks        Int       @default(0)
+  isPrivate    Boolean   @default(false)
+  lastSyncedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  commits Commit[]
+
+  @@index([ownerId])
+  @@index([lastSyncedAt])
+  @@index([githubId])
+}
+
+model Commit {
+  id           String   @id @default(cuid())
+  sha          String   @unique @db.VarChar(40)
+  repositoryId String
+  author       String   @db.VarChar(255)
+  authorEmail  String?  @db.VarChar(255)
+  message      String   @db.Text
+  additions    Int      @default(0)
+  deletions    Int      @default(0)
+  committedAt  DateTime
+  createdAt    DateTime @default(now())
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId])
+  @@index([author])
+  @@index([sha])
+  @@index([committedAt])
+  @@index([repositoryId, committedAt])
+}
+
+model AnalyticsCache {
+  id           String   @id @default(cuid())
+  repositoryId String   @db.VarChar(255)
+  metricType   String   @db.VarChar(100)
+  dateRange    String   @db.VarChar(20)
+  data         Json
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@unique([repositoryId, metricType, dateRange])
+  @@index([expiresAt])
+  @@index([repositoryId])
+}
