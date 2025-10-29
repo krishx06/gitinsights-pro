@@ -1,0 +1,122 @@
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+const GITHUB_API_BASE = 'https://api.github.com';
+
+async function githubGet(path) {
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'GitInsights-Pro',
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
+  }
+  const url = `${GITHUB_API_BASE}${path}`;
+  const res = await axios.get(url, { headers });
+  return res.data;
+}
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK' });
+});
+
+app.get('/api/repos/:owner/:repo/languages', async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const data = await githubGet(`/repos/${owner}/${repo}/languages`);
+    const total = Object.values(data).reduce((s, n) => s + n, 0) || 1;
+    const result = Object.entries(data).map(([name, bytes]) => ({
+      name,
+      bytes,
+      percentage: Number(((bytes / total) * 100).toFixed(1))
+    }));
+    res.json(result);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+  }
+});
+
+app.get('/api/repos/:owner/:repo/contributors', async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const data = await githubGet(`/repos/${owner}/${repo}/contributors?per_page=100&anon=false`);
+    const result = data.map(c => ({
+      id: c.id,
+      login: c.login,
+      avatar_url: c.avatar_url,
+      contributions: c.contributions,
+      html_url: c.html_url,
+    }));
+    res.json(result);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+  }
+});
+
+app.get('/api/repos/:owner/:repo/commits', async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+    const since = fourWeeksAgo.toISOString();
+    const data = await githubGet(`/repos/${owner}/${repo}/commits?since=${since}&per_page=100`);
+    const byDate = {};
+    for (const c of data) {
+      const date = (c.commit?.author?.date || '').slice(0, 10);
+      if (!date) continue;
+      byDate[date] = (byDate[date] || 0) + 1;
+    }
+    const result = Object.entries(byDate)
+      .map(([date, count]) => ({ date, commits: count }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    res.json(result);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+  }
+});
+
+app.get('/api/repos/:owner/:repo/stats', async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const repoInfo = await githubGet(`/repos/${owner}/${repo}`);
+    const languages = await githubGet(`/repos/${owner}/${repo}/languages`);
+    const contributors = await githubGet(`/repos/${owner}/${repo}/contributors?per_page=100&anon=false`);
+    const result = {
+      name: repoInfo.name,
+      full_name: repoInfo.full_name,
+      description: repoInfo.description,
+      stars: repoInfo.stargazers_count,
+      forks: repoInfo.forks_count,
+      watchers: repoInfo.watchers_count,
+      open_issues: repoInfo.open_issues_count,
+      language: repoInfo.language,
+      languages_count: Object.keys(languages).length,
+      contributors_count: contributors.length,
+      size: repoInfo.size,
+      created_at: repoInfo.created_at,
+      updated_at: repoInfo.updated_at,
+      pushed_at: repoInfo.pushed_at,
+    };
+    res.json(result);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
+  }
+});
+
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+app.listen(PORT, () => {
+  console.log(`API listening on :${PORT}`);
+});
