@@ -65,9 +65,9 @@ VITE_API_URL=http://localhost:3000
 **Authentication** 🔄
 
 - [x] GitHub OAuth SignIn UI — _krishx06_
-- [ ] OAuth app configuration — _[Name]_
-- [ ] Complete auth endpoints (`/auth/login`, `/auth/callback`, `/auth/me`) — _[Name]_
-- [ ] Protected routes & JWT management — _[Name]_
+- [x] OAuth app configuration — _krishx06_
+- [x] Complete auth endpoints (`/auth/login`, `/auth/callback`, `/auth/me`) — _krishx06_
+- [x] Protected routes & JWT management — _krishx06_
 - [ ] User profile component — _[Name]_
 
 **First Chart** 📊
