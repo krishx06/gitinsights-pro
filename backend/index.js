@@ -36,8 +36,93 @@ async function githubGet(path) {
 
 app.use("/auth", authRoutes);
 
+// Routes page at root
 app.get("/", (req, res) => {
-  res.send("GitInsights Pro backend running");
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>GitInsights Pro API</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          max-width: 800px;
+          margin: 50px auto;
+          padding: 20px;
+          background: #f5f5f5;
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .route {
+          background: white;
+          padding: 15px;
+          margin: 10px 0;
+          border-radius: 5px;
+          border-left: 3px solid #4CAF50;
+        }
+        .method {
+          background: #4CAF50;
+          color: white;
+          padding: 3px 8px;
+          border-radius: 3px;
+          font-size: 12px;
+          margin-right: 10px;
+        }
+        .path { font-weight: bold; }
+        .desc { color: #666; margin-top: 5px; }
+        .status { color: #4CAF50; }
+      </style>
+    </head>
+    <body>
+      <h1>GitInsights Pro API</h1>
+      <p class="status">✓ Server is running</p>
+
+      <h2>Routes</h2>
+
+      <div class="route">
+        <span class="method">GET</span>
+        <span class="path">/api/health</span>
+        <div class="desc">Health check</div>
+      </div>
+
+      <div class="route">
+        <span class="method">*</span>
+        <span class="path">/auth/*</span>
+        <div class="desc">Authentication endpoints</div>
+      </div>
+
+      <div class="route">
+        <span class="method">GET</span>
+        <span class="path">/api/repos/:owner/:repo/stats</span>
+        <div class="desc">Get repository statistics</div>
+      </div>
+
+      <div class="route">
+        <span class="method">GET</span>
+        <span class="path">/api/repos/:owner/:repo/languages</span>
+        <div class="desc">Get language breakdown</div>
+      </div>
+
+      <div class="route">
+        <span class="method">GET</span>
+        <span class="path">/api/repos/:owner/:repo/contributors</span>
+        <div class="desc">Get contributors list</div>
+      </div>
+
+      <div class="route">
+        <span class="method">GET</span>
+        <span class="path">/api/repos/:owner/:repo/commits</span>
+        <div class="desc">Get commits (last 28 days)</div>
+      </div>
+
+      <h2>Config</h2>
+      <p>Port: ${process.env.PORT || 5000}</p>
+      <p>GitHub Token: ${process.env.GITHUB_TOKEN ? "✓" : "✗"}</p>
+    </body>
+    </html>
+  `);
 });
 
 app.get("/api/health", (req, res) => {
