@@ -1,6 +1,6 @@
 # GitInsights Pro
 
-[📖 README](README.md) | [💡 Ideation](Idea.md) | [📊 ER Diagram](ER_diagram.md)
+[📖 README](README.md) | [💡 Ideation](./Idea.md) | [📊 ER Diagram](./ER_diagram.md)
 
 GitHub Analytics Dashboard for developer productivity insights.
 
