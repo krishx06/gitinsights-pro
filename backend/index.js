@@ -34,9 +34,13 @@ async function githubGet(path) {
   return res.data;
 }
 
-app.use("/auth", authRoutes);
+import dashboardRoutes from "./src/routes/dashboard.js";
 
-// Routes page at root
+app.use("/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
+
+// Root API route
 app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
