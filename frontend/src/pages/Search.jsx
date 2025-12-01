@@ -3,12 +3,14 @@ import axios from 'axios';
 import { Search as SearchIcon } from 'lucide-react';
 import CommitChart from '../components/CommitChart';
 import LanguageChart from '../components/LanguageChart';
+import TopContributorsChart from '../components/TopContributorsChart';
 
 const Search = () => {
   const [repoInput, setRepoInput] = useState('');
   const [repoData, setRepoData] = useState(null);
   const [commits, setCommits] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -28,17 +30,20 @@ const Search = () => {
     setRepoData(null);
     setCommits([]);
     setLanguages([]);
+    setContributors([]);
 
     try {
-      const [statsRes, commitsRes, langsRes] = await Promise.all([
+      const [statsRes, commitsRes, langsRes, contributorsRes] = await Promise.all([
         axios.get(`${backendUrl}/api/repos/${owner}/${repo}/stats`),
         axios.get(`${backendUrl}/api/repos/${owner}/${repo}/commits`),
         axios.get(`${backendUrl}/api/repos/${owner}/${repo}/languages`),
+        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/contributors`),
       ]);
 
       setRepoData(statsRes.data);
       setCommits(commitsRes.data);
       setLanguages(langsRes.data);
+      setContributors(contributorsRes.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch repository data');
       console.error('Error fetching repo data:', err);
@@ -94,9 +99,10 @@ const Search = () => {
         )}
       </div>
 
-      {/* Charts */}
+      {/* Charts Section */}
       {repoData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          {/* Commit Activity Chart - Full Width */}
           <CommitChart 
             commits={commits}
             repoName={repoData.full_name}
@@ -104,10 +110,18 @@ const Search = () => {
             error={null}
           />
           
-          <LanguageChart 
-            languages={languages}
-            loading={loading}
-          />
+          {/* Language and Contributors - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LanguageChart 
+              languages={languages}
+              loading={loading}
+            />
+            
+            <TopContributorsChart 
+              contributors={contributors}
+              loading={loading}
+            />
+          </div>
         </div>
       )}
 
@@ -160,10 +174,10 @@ const Search = () => {
             </p>
           </div>
           <div className="bg-card border rounded-xl p-6">
-            <div className="text-4xl mb-3">📈</div>
-            <h3 className="text-xl font-semibold mb-2">Repository Stats</h3>
+            <div className="text-4xl mb-3">👥</div>
+            <h3 className="text-xl font-semibold mb-2">Top Contributors</h3>
             <p className="text-muted-foreground text-sm">
-              Stars, forks, and contribution metrics
+              See who's contributing the most
             </p>
           </div>
         </div>

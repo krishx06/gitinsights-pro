@@ -76,7 +76,8 @@ function ProtectedRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/repositories" element={<Search />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/repositories" element={<Repositories />} />
         <Route path="/pull-requests" element={<PullRequests />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/builder" element={<Builder />} />

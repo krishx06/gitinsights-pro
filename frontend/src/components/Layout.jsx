@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
+  Search,
   BarChart3, 
   GitPullRequest, 
   Lightbulb, 
@@ -19,6 +20,7 @@ const Layout = ({ user, onLogout, children }) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: Search, label: 'Search', path: '/search' },
     { icon: BarChart3, label: 'Repositories', path: '/repositories' },
     { icon: GitPullRequest, label: 'Pull Requests', path: '/pull-requests' },
     { icon: Lightbulb, label: 'Insights', path: '/insights' },
@@ -48,9 +50,9 @@ const Layout = ({ user, onLogout, children }) => {
         `}
       >
         {/* Logo */}
-        <div className="p-6 border-b flex items-center gap-3">
+        <div className="p-5 border-b flex items-center gap-3">
           <Github className="text-primary" size={32} />
-          <span className="text-xl font-bold">GitHub Analytics</span>
+          <span className="text-xl font-bold">GitInsights Pro</span>
         </div>
 
         {/* Navigation */}

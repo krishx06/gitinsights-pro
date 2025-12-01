@@ -11,6 +11,8 @@ const CommitChart = ({ commits, repoName, loading, error }) => {
     if (!commits || commits.length === 0) return [];
 
     const now = new Date();
+    now.setHours(23, 59, 59, 999); // End of today
+    
     const ranges = {
       '7d': 7,
       '30d': 30,
@@ -23,10 +25,11 @@ const CommitChart = ({ commits, repoName, loading, error }) => {
 
     const cutoffDate = new Date(now);
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+    cutoffDate.setHours(0, 0, 0, 0); // Start of cutoff day
 
     return commits.filter(commit => {
       const commitDate = new Date(commit.date);
-      return commitDate >= cutoffDate;
+      return commitDate >= cutoffDate && commitDate <= now;
     });
   }, [commits, dateRange]);
 
