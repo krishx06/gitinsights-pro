@@ -82,6 +82,7 @@ export const getMe = async (req, res) => {
         avatarUrl: true,
         email: true,
         githubId: true,
+        accessToken: true,
       },
     });
     res.json(user);
@@ -89,7 +90,3 @@ export const getMe = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user" });
   }
 };
-
-
-
-
