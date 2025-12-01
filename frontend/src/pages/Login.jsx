@@ -60,7 +60,7 @@ const Login = () => {
 
       <button
         onClick={handleLogin}
-        className="flex items-center gap-3 bg-white text-black font-semibold px-6 py-3 rounded-xl hover:bg-gray-200 transition-all duration-200 shadow-md mb-16"
+        className="flex items-center gap-3 bg-white text-black font-semibold px-6 py-3 rounded-xl hover:bg-gray-200 transition-all duration-200 shadow-md mb-4"
       >
         <img
           src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
@@ -68,6 +68,16 @@ const Login = () => {
           className="w-6 h-6"
         />
         <span>Continue with GitHub</span>
+      </button>
+
+      <button
+        onClick={() => {
+          localStorage.setItem("token", "bypass-token");
+          window.location.href = "/dashboard";
+        }}
+        className="text-gray-500 hover:text-white transition-colors text-sm mb-16"
+      >
+        Bypass Login (Dev Only)
       </button>
 
 

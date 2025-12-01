@@ -5,7 +5,7 @@ import { authenticateJWT } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("/login", loginWithGitHub);
-router.get("/callback", githubCallback);
+router.get("/github/callback", githubCallback);
 router.get("/me", authenticateJWT, getMe);
 
 

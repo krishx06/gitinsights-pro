@@ -10,6 +10,7 @@ import PullRequests from "./pages/PullRequests";
 import Insights from "./pages/Insights";
 import Builder from "./pages/Builder";
 import Settings from "./pages/Settings";
+import Compare from "./pages/Compare";
 
 // Protected Routes Wrapper
 function ProtectedRoutes() {
@@ -34,6 +35,17 @@ function ProtectedRoutes() {
     }
 
     const fetchUser = async () => {
+      if (token === "bypass-token") {
+        setUser({
+          id: "mock-user-id",
+          username: "DevUser",
+          avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+          email: "dev@example.com",
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await axios.get(`${backendUrl}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -78,6 +90,7 @@ function ProtectedRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/search" element={<Search />} />
         <Route path="/repositories" element={<Repositories />} />
+        <Route path="/compare" element={<Compare />} />
         <Route path="/pull-requests" element={<PullRequests />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/builder" element={<Builder />} />

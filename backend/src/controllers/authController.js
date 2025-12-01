@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 export const loginWithGitHub = (req, res) => {
   const redirectUri = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${process.env.GITHUB_CALLBACK_URL}&scope=read:user,user:email,repo`;
+
   res.redirect(redirectUri);
 };
 
