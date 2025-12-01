@@ -1,40 +1,98 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { ThemeProvider } from "./context/ThemeContext";
-import { AuthProvider } from "./context/AuthContext";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 import Login from "./pages/Login";
+import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
+import Search from "./pages/Search";
+import Repositories from "./pages/Repositories";
+import PullRequests from "./pages/PullRequests";
+import Insights from "./pages/Insights";
+import Builder from "./pages/Builder";
+import Settings from "./pages/Settings";
 
-function AppContent() {
+// Protected Routes Wrapper
+function ProtectedRoutes() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  useEffect(() => {
+    const token = searchParams.get("token") || localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    if (searchParams.get("token")) {
+      localStorage.setItem("token", token);
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        localStorage.removeItem("token");
+        navigate("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [searchParams, navigate, backendUrl]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/search" element={<Dashboard />} />
-      <Route path="/team" element={<Dashboard />} />
-      <Route path="/repository" element={<Dashboard />} />
-      <Route path="/insights" element={<Dashboard />} />
-      <Route path="/settings" element={<Dashboard />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Layout user={user} onLogout={handleLogout}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/repositories" element={<Search />} />
+        <Route path="/pull-requests" element={<PullRequests />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/builder" element={<Builder />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </Layout>
   );
 }
 
 function App() {
   return (
     <Router>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </ThemeProvider>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/*" element={<ProtectedRoutes />} />
+      </Routes>
     </Router>
   );
 }

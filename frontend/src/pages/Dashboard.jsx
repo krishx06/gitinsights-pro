@@ -1,140 +1,137 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
-import DeveloperCard from "../components/DeveloperCard";
-import { TrendingUp } from "lucide-react";
+import React from 'react';
+import { TrendingUp, TrendingDown, RefreshCw, Download } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 
 const Dashboard = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-  // Mock trending developers data
-  const trendingDevelopers = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      username: "sarahchen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      bio: "Full-stack developer passionate about React and TypeScript",
-      languages: ["TypeScript", "Python", "Go"],
-      repositories: 42,
-      stars: 1234
+  // Mock data for demonstration
+  const stats = [
+    { 
+      label: 'Total Commits', 
+      value: '1,234', 
+      change: '+12.5%', 
+      trend: 'up',
+      subtitle: 'Last 30 days',
+      icon: '🔹'
     },
-    {
-      id: 2,
-      name: "Alex Kumar",
-      username: "alexk",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-      bio: "DevOps engineer | Cloud architecture enthusiast",
-      languages: ["JavaScript", "Rust", "Shell"],
-      repositories: 28,
-      stars: 987
+    { 
+      label: 'Pull Requests', 
+      value: '89', 
+      change: '+8.2%', 
+      trend: 'up',
+      subtitle: '32 merged this week',
+      icon: '🔀'
     },
-    {
-      id: 3,
-      name: "Maria Garcia",
-      username: "mgarcia",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-      bio: "ML Engineer building the future",
-      languages: ["Python", "Julia", "C++"],
-      repositories: 35,
-      stars: 2156
-    }
+    { 
+      label: 'Contributors', 
+      value: '24', 
+      change: '+20.8%', 
+      trend: 'up',
+      subtitle: '5 new this month',
+      icon: '👥'
+    },
+    { 
+      label: 'Activity Score', 
+      value: '94%', 
+      change: '+4.3%', 
+      trend: 'up',
+      subtitle: 'Above average',
+      icon: '📈'
+    },
   ];
 
-  useEffect(() => {
-    const token = searchParams.get("token") || localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
-    if (searchParams.get("token")) {
-      localStorage.setItem("token", token);
-      window.history.replaceState({}, document.title, "/dashboard");
-    }
-
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        localStorage.removeItem("token");
-        navigate("/");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [searchParams, navigate, backendUrl]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0f1116] flex items-center justify-center">
-        <div className="text-gray-900 dark:text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f1116]">
-      <Sidebar />
-      
-      <div className="lg:ml-64">
-        <Navbar />
-        
-        <main className="p-8">
-          {/* Hero Section */}
-          <div className="mb-12 text-center">
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Discover GitHub Talent
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              Search and analyze millions of developers worldwide
-            </p>
-          </div>
-
-          {/* Search Bar */}
-          <div className="max-w-3xl mx-auto mb-12">
-            <input
-              type="text"
-              placeholder="Search by username, name, or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-700 
-                       rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            />
-          </div>
-
-          {/* Trending Developers Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="text-blue-600" size={24} />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Trending Developers
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingDevelopers.map((developer) => (
-                <DeveloperCard key={developer.id} developer={developer} />
-              ))}
-            </div>
-          </div>
-        </main>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your repository analytics</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="px-4 py-2 border rounded-lg hover:bg-accent transition-colors flex items-center gap-2">
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+            <Download size={16} />
+            Export
+          </button>
+        </div>
       </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+                  <h3 className="text-3xl font-bold">{stat.value}</h3>
+                </div>
+                <div className="text-3xl">{stat.icon}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  {stat.change}
+                </span>
+                <span className="text-sm text-muted-foreground">{stat.subtitle}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Placeholder for Commit Activity Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Commit Activity</CardTitle>
+            <CardDescription>Last 7 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center bg-muted/50 rounded-lg">
+              <p className="text-muted-foreground">Chart will be displayed here</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Placeholder for Language Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Language Distribution</CardTitle>
+            <CardDescription>By lines of code</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center bg-muted/50 rounded-lg">
+              <p className="text-muted-foreground">Chart will be displayed here</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Latest updates from your repositories</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="flex items-start gap-4 p-4 rounded-lg hover:bg-accent transition-colors">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                <div className="flex-1">
+                  <p className="font-medium">Repository activity update</p>
+                  <p className="text-sm text-muted-foreground">Some activity happened in your repository</p>
+                  <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
