@@ -56,7 +56,7 @@ export const githubCallback = async (req, res) => {
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); 
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await prisma.session.create({
       data: {
         userId: user.id,
@@ -89,5 +89,7 @@ export const getMe = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user" });
   }
 };
+
+
 
 

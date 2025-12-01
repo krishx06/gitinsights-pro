@@ -8,5 +8,6 @@ router.get("/login", loginWithGitHub);
 router.get("/callback", githubCallback);
 router.get("/me", authenticateJWT, getMe);
 
+
 export default router;
 

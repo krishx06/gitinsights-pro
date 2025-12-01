@@ -52,7 +52,7 @@ const Login = () => {
         />
         <h1 className="text-5xl font-bold mb-3">GitInsights Pro</h1>
         <p className="text-gray-400 text-lg max-w-xl leading-relaxed">
-          Your all-in-one dashboard for GitHub analytics.  
+          Your all-in-one dashboard for GitHub analytics.
           Understand your projects, empower your team, and make data-driven decisions — effortlessly.
         </p>
       </header>
@@ -69,6 +69,8 @@ const Login = () => {
         />
         <span>Continue with GitHub</span>
       </button>
+
+
 
 
       <section className="w-full max-w-6xl text-center">
