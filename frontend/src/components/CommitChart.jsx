@@ -70,6 +70,28 @@ const CommitChart = ({ commits, repoName, loading, error }) => {
     return null;
   };
 
+  // Custom Axis Tick Component
+  const CustomAxisTick = ({ x, y, payload, axis }) => {
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={axis === 'x' ? 16 : 4}
+          dx={axis === 'y' ? -8 : 0}
+          textAnchor={axis === 'x' ? 'middle' : 'end'}
+          fill="hsl(var(--muted-foreground))"
+          fontSize={12}
+        >
+          {axis === 'x' 
+            ? new Date(payload.value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : payload.value
+          }
+        </text>
+      </g>
+    );
+  };
+
   if (loading) {
     return (
       <Card>
@@ -185,25 +207,23 @@ const CommitChart = ({ commits, repoName, loading, error }) => {
           <div className="w-full h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={filteredCommits} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" stroke="currentColor" opacity={0.3} />
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke="hsl(var(--border))"
+                  opacity={0.5}
+                />
                 <XAxis 
                   dataKey="date" 
                   tickLine={false}
-                  axisLine={false}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickMargin={8}
-                  tick={{ fill: 'currentColor', fontSize: 12 }}
-                  className="text-muted-foreground"
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                  }}
+                  tick={(props) => <CustomAxisTick {...props} axis="x" />}
                 />
                 <YAxis 
                   tickLine={false}
-                  axisLine={false}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickMargin={8}
-                  tick={{ fill: 'currentColor', fontSize: 12 }}
-                  className="text-muted-foreground"
+                  tick={(props) => <CustomAxisTick {...props} axis="y" />}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Line 
@@ -212,7 +232,7 @@ const CommitChart = ({ commits, repoName, loading, error }) => {
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ fill: 'hsl(var(--primary))', r: 4 }}
-                  activeDot={{ r: 6 }}
+                  activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
                 />
               </LineChart>
             </ResponsiveContainer>

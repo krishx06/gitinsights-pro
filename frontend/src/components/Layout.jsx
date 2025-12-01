@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -9,9 +9,9 @@ import {
   Settings,
   Menu,
   X,
-  Github,
-  LogOut
+  Github
 } from 'lucide-react';
+import Navbar from './Navbar';
 
 const Layout = ({ user, onLogout, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -85,33 +85,8 @@ const Layout = ({ user, onLogout, children }) => {
 
       {/* Main Content Area */}
       <div className="lg:ml-64">
-        {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-card border-b">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex-1 max-w-md lg:ml-12 lg:mr-0">
-              {/* Search will be on specific pages */}
-            </div>
-
-            <div className="flex items-center gap-4">
-              {user && (
-                <>
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.username}
-                    className="w-9 h-9 rounded-full ring-2 ring-border"
-                  />
-                  <button
-                    onClick={onLogout}
-                    className="p-2 hover:bg-accent rounded-lg transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut size={20} className="text-muted-foreground" />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
+        {/* Use Navbar Component */}
+        <Navbar user={user} logout={onLogout} />
 
         {/* Page Content */}
         <main className="p-6">

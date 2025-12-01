@@ -28,6 +28,29 @@ const LanguageChart = ({ languages, loading }) => {
     return null;
   };
 
+  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    if (percent < 0.05) return null; // Hide label if slice is too small
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="hsl(var(--card-foreground))" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={500}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   const CustomLegend = ({ payload }) => {
     return (
       <div className="flex flex-wrap justify-center gap-4 mt-4">
@@ -107,13 +130,18 @@ const LanguageChart = ({ languages, loading }) => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percentage }) => `${name} ${percentage}%`}
-                outerRadius={80}
+                label={CustomLabel}
+                outerRadius={100}
                 fill="#8884d8"
                 dataKey="percentage"
+                strokeWidth={2}
+                stroke="hsl(var(--background))"
               >
                 {topLanguages.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -130,7 +158,7 @@ const LanguageChart = ({ languages, loading }) => {
                 <span className="text-sm font-medium">{lang.name}</span>
                 <span className="text-sm text-muted-foreground">{lang.percentage}%</span>
               </div>
-              <div className="w-full bg-secondary rounded-full h-2">
+              <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                 <div
                   className="h-2 rounded-full transition-all duration-500"
                   style={{
