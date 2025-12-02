@@ -47,4 +47,9 @@ export const repoAPI = {
   getCommits: (owner, repo) => api.get(`/api/repos/${owner}/${repo}/commits`),
 };
 
+export const dashboardAPI = {
+  getStats: () => api.get('/api/dashboard/stats'),
+  getPullRequestStats: () => api.get('/api/dashboard/pull-requests'),
+};
+
 export default api;

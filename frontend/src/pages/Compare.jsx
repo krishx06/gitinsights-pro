@@ -52,11 +52,11 @@ const Compare = () => {
     const maxWatchers = getBest("watchers");
 
     return (
-        <div className="min-h-screen bg-[#0D0D0D] text-white p-8">
+        <div className="min-h-screen bg-background text-foreground p-8">
             <div className="max-w-7xl mx-auto">
                 <button
                     onClick={() => navigate("/repositories")}
-                    className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
                 >
                     <ArrowLeft size={20} />
                     Back to Repositories
@@ -68,23 +68,23 @@ const Compare = () => {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th className="p-4 text-left bg-[#121212] border-b border-[#1E1E1E] w-48">Feature</th>
+                                <th className="p-4 text-left bg-card border-b border-border w-48">Feature</th>
                                 {repos.map(repo => (
-                                    <th key={repo.id} className="p-4 text-left bg-[#121212] border-b border-[#1E1E1E] min-w-[250px]">
+                                    <th key={repo.id} className="p-4 text-left bg-card border-b border-border min-w-[250px]">
                                         <div className="text-xl font-bold">{repo.name}</div>
-                                        <div className="text-sm text-gray-400 font-normal mt-1 line-clamp-1">{repo.description}</div>
+                                        <div className="text-sm text-muted-foreground font-normal mt-1 line-clamp-1">{repo.description}</div>
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#1E1E1E]">
+                        <tbody className="divide-y divide-border">
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <Star size={18} /> Stars
                                 </td>
                                 {repos.map(repo => (
-                                    <td key={repo.id} className={`p-4 ${repo.stars === maxStars ? "text-yellow-400 font-bold bg-yellow-400/5" : ""}`}>
+                                    <td key={repo.id} className={`p-4 ${repo.stars === maxStars ? "text-yellow-400 font-bold bg-yellow-400/10" : ""}`}>
                                         {repo.stars.toLocaleString()}
                                     </td>
                                 ))}
@@ -92,11 +92,11 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <GitFork size={18} /> Forks
                                 </td>
                                 {repos.map(repo => (
-                                    <td key={repo.id} className={`p-4 ${repo.forks === maxForks ? "text-blue-400 font-bold bg-blue-400/5" : ""}`}>
+                                    <td key={repo.id} className={`p-4 ${repo.forks === maxForks ? "text-blue-400 font-bold bg-blue-400/10" : ""}`}>
                                         {repo.forks.toLocaleString()}
                                     </td>
                                 ))}
@@ -104,11 +104,11 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <AlertCircle size={18} /> Open Issues
                                 </td>
                                 {repos.map(repo => (
-                                    <td key={repo.id} className={`p-4 ${repo.openIssues === minIssues ? "text-green-400 font-bold bg-green-400/5" : ""}`}>
+                                    <td key={repo.id} className={`p-4 ${repo.openIssues === minIssues ? "text-green-400 font-bold bg-green-400/10" : ""}`}>
                                         {repo.openIssues.toLocaleString()}
                                     </td>
                                 ))}
@@ -116,11 +116,11 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <Eye size={18} /> Watchers
                                 </td>
                                 {repos.map(repo => (
-                                    <td key={repo.id} className={`p-4 ${repo.watchers === maxWatchers ? "text-purple-400 font-bold bg-purple-400/5" : ""}`}>
+                                    <td key={repo.id} className={`p-4 ${repo.watchers === maxWatchers ? "text-purple-400 font-bold bg-purple-400/10" : ""}`}>
                                         {repo.watchers.toLocaleString()}
                                     </td>
                                 ))}
@@ -128,7 +128,7 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <HardDrive size={18} /> Size
                                 </td>
                                 {repos.map(repo => (
@@ -140,7 +140,7 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <Scale size={18} /> License
                                 </td>
                                 {repos.map(repo => (
@@ -152,7 +152,7 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 flex items-center gap-2">
+                                <td className="p-4 text-muted-foreground flex items-center gap-2">
                                     <Calendar size={18} /> Age
                                 </td>
                                 {repos.map(repo => (
@@ -164,12 +164,12 @@ const Compare = () => {
 
 
                             <tr>
-                                <td className="p-4 text-gray-400 align-top pt-6">Topics</td>
+                                <td className="p-4 text-muted-foreground align-top pt-6">Topics</td>
                                 {repos.map(repo => (
                                     <td key={repo.id} className="p-4 align-top">
                                         <div className="flex flex-wrap gap-2">
                                             {repo.topics?.map(topic => (
-                                                <span key={topic} className="px-2 py-1 bg-[#1E1E1E] rounded-md text-xs text-gray-300 border border-gray-800">
+                                                <span key={topic} className="px-2 py-1 bg-secondary rounded-md text-xs text-secondary-foreground border border-border">
                                                     {topic}
                                                 </span>
                                             ))}
