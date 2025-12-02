@@ -14,7 +14,7 @@ const Repositories = () => {
   }, [fetchRepos]);
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white p-8">
+    <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-7xl mx-auto">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">

@@ -8,41 +8,36 @@ import useRepoStore from "../store/repoStore";
 const RepoList = () => {
     const { repos, loading, error, selectedRepoIds, toggleRepoSelection, toggleRepoFavorite } = useRepoStore();
 
-    if (error) {
-        return (
-            <div className="text-center py-20">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl inline-block mb-4">
-                    {error}
-                </div>
-                <p className="text-gray-400">Please try syncing again.</p>
-            </div>
-        );
-    }
 
     if (loading) {
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                        key={i}
-                        className="h-48 bg-[#121212] border border-[#1E1E1E] rounded-xl animate-pulse"
-                    />
+                {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-48 bg-card border border-border rounded-xl animate-pulse" />
                 ))}
             </div>
         );
     }
 
-    if (!repos?.length) {
+    if (error) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 bg-[#1E1E1E] rounded-full flex items-center justify-center mb-4">
-                    <FolderOpen size={32} className="text-gray-500" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No repositories found</h3>
-                <p className="text-gray-400 max-w-sm">
-                    Try adjusting your search or sync your repositories from GitHub.
-                </p>
+            <div className="text-center py-12">
+                <p className="text-destructive mb-4">{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
+    if (repos.length === 0) {
+        return (
+            <div className="text-center py-12 text-muted-foreground">
+                No repositories found. Try syncing with GitHub.
             </div>
         );
     }
