@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: gitinsights-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install && npx prisma generate
+    startCommand: cd backend && npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gitinsights-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CALLBACK_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+      - key: AI_SERVICE_URL
+        value: https://gitinsights-ai.onrender.com
+
+  - type: web
+    name: gitinsights-ai
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    envVars:
+      - key: PORT
+        value: 8000
+
+databases:
+  - name: gitinsights-db
+    databaseName: gitinsights
+    user: gitinsights
+    plan: free
