@@ -16,7 +16,7 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import CommitChart from '../components/CommitChart';
 import LanguageChart from '../components/LanguageChart';
 import TopContributorsChart from '../components/TopContributorsChart';
@@ -25,7 +25,7 @@ import IssueTrackerWidget from '../components/IssueTrackerWidget';
 import ReleaseTimelineWidget from '../components/ReleaseTimelineWidget';
 import ActivityFeedWidget from '../components/ActivityFeedWidget';
 import CodeFrequencyWidget from '../components/CodeFrequencyWidget';
-import axios from 'axios';
+import api from '../lib/api';
 import { cn } from '../lib/utils';
 
 const Builder = () => {
@@ -42,9 +42,6 @@ const Builder = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingDashboards, setLoadingDashboards] = useState(true);
-  
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const token = localStorage.getItem('token');
 
   // Available widget types
   const widgetTypes = [
@@ -143,9 +140,7 @@ const Builder = () => {
   const fetchDashboards = async () => {
     setLoadingDashboards(true);
     try {
-      const response = await axios.get(`${backendUrl}/api/dashboards`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/dashboards');
       setSavedDashboards(response.data);
       
       // Load the most recent dashboard
@@ -215,18 +210,10 @@ const Builder = () => {
       let response;
       if (currentDashboardId) {
         // Update existing dashboard
-        response = await axios.put(
-          `${backendUrl}/api/dashboards/${currentDashboardId}`,
-          dashboardData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        response = await api.put(`/api/dashboards/${currentDashboardId}`, dashboardData);
       } else {
         // Create new dashboard
-        response = await axios.post(
-          `${backendUrl}/api/dashboards`,
-          dashboardData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        response = await api.post('/api/dashboards', dashboardData);
         setCurrentDashboardId(response.data.id);
       }
 
@@ -265,9 +252,7 @@ const Builder = () => {
     }
 
     try {
-      await axios.delete(`${backendUrl}/api/dashboards/${dashboardId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/dashboards/${dashboardId}`);
 
       // If deleting current dashboard, clear it
       if (currentDashboardId === dashboardId) {
@@ -289,15 +274,15 @@ const Builder = () => {
     setLoading(true);
     try {
       const [statsRes, commitsRes, langsRes, contribRes, pullsRes, issuesRes, releasesRes, activityRes, codeFreqRes] = await Promise.all([
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/stats`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/commits`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/languages`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/contributors`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/pulls`).catch(() => ({ data: null })),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/issues`).catch(() => ({ data: null })),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/releases`).catch(() => ({ data: [] })),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/activity`).catch(() => ({ data: [] })),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/code-frequency`).catch(() => ({ data: [] })),
+        api.get(`/api/repos/${owner}/${repo}/stats`),
+        api.get(`/api/repos/${owner}/${repo}/commits`),
+        api.get(`/api/repos/${owner}/${repo}/languages`),
+        api.get(`/api/repos/${owner}/${repo}/contributors`),
+        api.get(`/api/repos/${owner}/${repo}/pulls`).catch(() => ({ data: null })),
+        api.get(`/api/repos/${owner}/${repo}/issues`).catch(() => ({ data: null })),
+        api.get(`/api/repos/${owner}/${repo}/releases`).catch(() => ({ data: [] })),
+        api.get(`/api/repos/${owner}/${repo}/activity`).catch(() => ({ data: [] })),
+        api.get(`/api/repos/${owner}/${repo}/code-frequency`).catch(() => ({ data: [] })),
       ]);
 
       setRepoData(prev => ({

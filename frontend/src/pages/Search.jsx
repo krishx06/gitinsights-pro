@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Search as SearchIcon } from 'lucide-react';
 import CommitChart from '../components/CommitChart';
 import LanguageChart from '../components/LanguageChart';
 import TopContributorsChart from '../components/TopContributorsChart';
+import api from '../lib/api';
 
 const Search = () => {
   const [repoInput, setRepoInput] = useState('');
@@ -13,7 +13,6 @@ const Search = () => {
   const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const analyzeRepo = async () => {
     if (!repoInput.trim()) return;
@@ -34,10 +33,10 @@ const Search = () => {
 
     try {
       const [statsRes, commitsRes, langsRes, contributorsRes] = await Promise.all([
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/stats`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/commits`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/languages`),
-        axios.get(`${backendUrl}/api/repos/${owner}/${repo}/contributors`),
+        api.get(`/api/repos/${owner}/${repo}/stats`),
+        api.get(`/api/repos/${owner}/${repo}/commits`),
+        api.get(`/api/repos/${owner}/${repo}/languages`),
+        api.get(`/api/repos/${owner}/${repo}/contributors`),
       ]);
 
       setRepoData(statsRes.data);
