@@ -32,7 +32,7 @@ class ProjectHealthAnalyzer:
         }
 
 class CompletionEstimator:
-    def predict(self, df, total_scope=None):
+    def predict(self, df, total_scope=None, target_date=None):
         df['date'] = pd.to_datetime(df['date'])
         daily_commits = df.groupby(df['date'].dt.date).size()
         
@@ -41,6 +41,32 @@ class CompletionEstimator:
 
         avg_velocity = daily_commits.mean()
         current_commits = len(df)
+        
+        if target_date:
+            target_datetime = datetime.strptime(target_date, "%Y-%m-%d")
+            days_until_target = (target_datetime - datetime.now()).days
+            
+            if days_until_target <= 0:
+                return {
+                    "status": "Target date has passed or is today",
+                    "avg_daily_commits": round(avg_velocity, 1),
+                    "days_remaining": 0
+                }
+            
+            estimated_total_scope = current_commits * 2
+            remaining_commits = max(0, estimated_total_scope - current_commits)
+            velocity_needed = remaining_commits / days_until_target if days_until_target > 0 else 999
+            
+            will_complete_on_time = avg_velocity >= velocity_needed
+            
+            return {
+                "avg_daily_commits": round(avg_velocity, 1),
+                "estimated_completion": target_date,
+                "days_remaining": days_until_target,
+                "velocity_needed": round(velocity_needed, 1),
+                "projected_scope": estimated_total_scope,
+                "on_track": will_complete_on_time
+            }
         
         target = total_scope if total_scope else current_commits * 2
         

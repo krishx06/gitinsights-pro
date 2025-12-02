@@ -19,6 +19,7 @@ const Insights = () => {
   const [loading, setLoading] = useState(false);
   const [repos, setRepos] = useState([]);
   const [selectedRepo, setSelectedRepo] = useState('');
+  const [targetDate, setTargetDate] = useState('');
   const [insights, setInsights] = useState(null);
   const [error, setError] = useState(null);
   const [syncing, setSyncing] = useState(false);
@@ -82,7 +83,7 @@ const Insights = () => {
         throw new Error("Invalid repository format");
       }
 
-      const response = await api.post(`/api/insights/${owner}/${repo}/analyze`);
+      const response = await api.post(`/api/insights/${owner}/${repo}/analyze`, { targetDate });
       setInsights(response.data);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
@@ -96,7 +97,7 @@ const Insights = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">AI Project Insights</h1>
-          <p className="text-muted-foreground">Powered by PyTorch & Deep Learning</p>
+          <p className="text-muted-foreground">Intelligent analytics for your repositories</p>
         </div>
 
         <div className="flex gap-2 w-full md:w-auto items-center">
@@ -160,8 +161,18 @@ const Insights = () => {
                     ))
                   )}
                 </div>
-              </div>
-            )}
+              </div>)}
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <label className="text-sm font-medium">Target Date:</label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="px-4 py-2 bg-secondary rounded-lg border border-transparent focus:border-primary focus:ring-1 focus:ring-primary"
+              min={new Date().toISOString().split('T')[0]}
+            />
           </div>
 
           <button

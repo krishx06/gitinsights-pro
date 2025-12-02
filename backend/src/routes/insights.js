@@ -48,6 +48,7 @@ async function fetchAllCommits(accessToken, owner, repo) {
 router.post("/:owner/:repo/analyze", authenticateJWT, async (req, res) => {
     try {
         const { owner, repo } = req.params;
+        const { targetDate } = req.body;
 
         const user = await prisma.user.findUnique({
             where: { id: req.user.userId },
@@ -64,10 +65,11 @@ router.post("/:owner/:repo/analyze", authenticateJWT, async (req, res) => {
         }
 
         const payload = { commits };
+        const completionPayload = { commits, target_date: targetDate };
 
         const [healthRes, completionRes, teamRes] = await Promise.all([
             axios.post(`${AI_SERVICE_URL}/analyze/health`, payload),
-            axios.post(`${AI_SERVICE_URL}/analyze/completion`, payload),
+            axios.post(`${AI_SERVICE_URL}/analyze/completion`, completionPayload),
             axios.post(`${AI_SERVICE_URL}/analyze/team`, payload)
         ]);
 

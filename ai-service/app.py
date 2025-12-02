@@ -22,6 +22,7 @@ class CommitData(BaseModel):
 class RepoRequest(BaseModel):
     commits: List[CommitData]
     total_scope: Optional[int] = None
+    target_date: Optional[str] = None
     start_date: Optional[str] = None
 
 @app.get("/")
@@ -47,7 +48,7 @@ def estimate_completion(data: RepoRequest):
         if df.empty:
             return {"estimated_date": None, "days_remaining": None}
             
-        result = estimator.predict(df, data.total_scope)
+        result = estimator.predict(df, data.total_scope, data.target_date)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
