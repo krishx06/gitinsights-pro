@@ -70,15 +70,7 @@ const Login = () => {
         <span>Continue with GitHub</span>
       </button>
 
-      <button
-        onClick={() => {
-          localStorage.setItem("token", "bypass-token");
-          window.location.href = "/dashboard";
-        }}
-        className="text-gray-500 hover:text-white transition-colors text-sm mb-16"
-      >
-        Bypass Login (Dev Only)
-      </button>
+
 
 
 

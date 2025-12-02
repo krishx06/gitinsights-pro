@@ -27,7 +27,7 @@ model User {
 
   repositories Repository[]
   sessions     Session[]
-  dashboards   Dashboard[]  // Add this line
+  dashboards   Dashboard[]
 
   @@index([githubId])
   @@index([username])
@@ -57,7 +57,13 @@ model Repository {
   language     String?   @db.VarChar(100)
   stars        Int       @default(0)
   forks        Int       @default(0)
+  openIssues   Int       @default(0)
+  watchers     Int       @default(0)
+  size         Int       @default(0)
+  license      String?   @db.VarChar(100)
+  topics       Json?     // Storing topics as a JSON array
   isPrivate    Boolean   @default(false)
+  isFavorite   Boolean   @default(false)
   lastSyncedAt DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -68,6 +74,7 @@ model Repository {
   @@index([ownerId])
   @@index([lastSyncedAt])
   @@index([githubId])
+  @@index([isFavorite])
 }
 
 model Commit {
@@ -104,6 +111,7 @@ model AnalyticsCache {
   @@index([expiresAt])
   @@index([repositoryId])
 }
+
 model Dashboard {
   id        String   @id @default(cuid())
   name      String   @db.VarChar(255)

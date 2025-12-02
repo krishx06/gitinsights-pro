@@ -36,16 +36,7 @@ function ProtectedRoutes() {
     }
 
     const fetchUser = async () => {
-      if (token === "bypass-token") {
-        setUser({
-          id: "mock-user-id",
-          username: "DevUser",
-          avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-          email: "dev@example.com",
-        });
-        setLoading(false);
-        return;
-      }
+
 
       try {
         const response = await axios.get(`${backendUrl}/auth/me`, {

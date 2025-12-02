@@ -40,7 +40,7 @@ const Compare = () => {
         );
     }
 
-    // Helper to find the best value for highlighting
+
     const getBest = (key, type = "max") => {
         const values = repos.map(r => r[key] || 0);
         return type === "max" ? Math.max(...values) : Math.min(...values);
@@ -78,7 +78,7 @@ const Compare = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#1E1E1E]">
-                            {/* Stars */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <Star size={18} /> Stars
@@ -90,7 +90,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Forks */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <GitFork size={18} /> Forks
@@ -102,7 +102,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Open Issues */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <AlertCircle size={18} /> Open Issues
@@ -114,7 +114,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Watchers */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <Eye size={18} /> Watchers
@@ -126,7 +126,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Size */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <HardDrive size={18} /> Size
@@ -138,7 +138,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* License */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <Scale size={18} /> License
@@ -150,7 +150,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Created At */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 flex items-center gap-2">
                                     <Calendar size={18} /> Age
@@ -162,7 +162,7 @@ const Compare = () => {
                                 ))}
                             </tr>
 
-                            {/* Topics */}
+
                             <tr>
                                 <td className="p-4 text-gray-400 align-top pt-6">Topics</td>
                                 {repos.map(repo => (

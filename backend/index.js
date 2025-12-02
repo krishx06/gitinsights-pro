@@ -7,6 +7,7 @@ import authRoutes from "./src/routes/auth.js";
 import dashboardRoutes from "./src/routes/dashboard.js";
 import teamsRoutes from "./src/routes/teams.js";
 import dashboardsRoutes from "./src/routes/dashboards.js";
+import repoRoutes from "./src/routes/repo.js";
 
 dotenv.config();
 
@@ -42,6 +43,8 @@ async function githubGet(path, token = null) {
 app.use("/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/teams", teamsRoutes);
+app.use("/api/dashboards", dashboardsRoutes);
+app.use("/api/repos", repoRoutes);
 
 // Root API route (updated with new endpoints)
 app.get("/", (req, res) => {
@@ -187,9 +190,9 @@ app.get("/api/repos/:owner/:repo/pulls", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const { state = 'all' } = req.query;
-    
+
     const pulls = await githubGet(`/repos/${owner}/${repo}/pulls?state=${state}&per_page=100`);
-    
+
     const metrics = {
       total: pulls.length,
       open: pulls.filter(p => p.state === 'open').length,
@@ -205,7 +208,7 @@ app.get("/api/repos/:owner/:repo/pulls", async (req, res) => {
         html_url: pr.html_url
       }))
     };
-    
+
     res.json(metrics);
   } catch (e) {
     res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
@@ -217,12 +220,12 @@ app.get("/api/repos/:owner/:repo/issues", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const { state = 'all' } = req.query;
-    
+
     const issues = await githubGet(`/repos/${owner}/${repo}/issues?state=${state}&per_page=100`);
-    
+
     // Filter out pull requests (GitHub API includes PRs in issues)
     const actualIssues = issues.filter(issue => !issue.pull_request);
-    
+
     const metrics = {
       total: actualIssues.length,
       open: actualIssues.filter(i => i.state === 'open').length,
@@ -237,7 +240,7 @@ app.get("/api/repos/:owner/:repo/issues", async (req, res) => {
         html_url: issue.html_url
       }))
     };
-    
+
     res.json(metrics);
   } catch (e) {
     res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
@@ -249,7 +252,7 @@ app.get("/api/repos/:owner/:repo/releases", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const releases = await githubGet(`/repos/${owner}/${repo}/releases?per_page=20`);
-    
+
     const result = releases.map(release => ({
       id: release.id,
       name: release.name,
@@ -260,7 +263,7 @@ app.get("/api/repos/:owner/:repo/releases", async (req, res) => {
       prerelease: release.prerelease,
       draft: release.draft
     }));
-    
+
     res.json(result);
   } catch (e) {
     res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
@@ -272,7 +275,7 @@ app.get("/api/repos/:owner/:repo/activity", async (req, res) => {
   try {
     const { owner, repo } = req.params;
     const events = await githubGet(`/repos/${owner}/${repo}/events?per_page=50`);
-    
+
     const activities = events.map(event => ({
       id: event.id,
       type: event.type,
@@ -287,7 +290,7 @@ app.get("/api/repos/:owner/:repo/activity", async (req, res) => {
         commits: event.payload.commits?.length || 0
       }
     }));
-    
+
     res.json(activities);
   } catch (e) {
     res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
@@ -298,21 +301,21 @@ app.get("/api/repos/:owner/:repo/activity", async (req, res) => {
 app.get("/api/repos/:owner/:repo/code-frequency", async (req, res) => {
   try {
     const { owner, repo } = req.params;
-    
+
     try {
       const data = await githubGet(`/repos/${owner}/${repo}/stats/code_frequency`);
-      
+
       if (!data || data.length === 0) {
         return res.json([]);
       }
-      
+
       const result = data.slice(-12).map(week => ({
         week: new Date(week[0] * 1000).toISOString().split('T')[0],
         additions: week[1],
         deletions: Math.abs(week[2]),
         net: week[1] + week[2]
       }));
-      
+
       res.json(result);
     } catch (statsError) {
       console.log('Code frequency not ready yet, returning empty');
@@ -322,8 +325,6 @@ app.get("/api/repos/:owner/:repo/code-frequency", async (req, res) => {
     res.status(e.response?.status || 500).json({ error: e.response?.data?.message || e.message });
   }
 });
-
-app.use("/api/dashboards", dashboardsRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);
