@@ -24,7 +24,8 @@ const Layout = ({ user, onLogout, children }) => {
     { icon: BarChart3, label: 'Repositories', path: '/repositories' },
     { icon: GitPullRequest, label: 'Pull Requests', path: '/pull-requests' },
     { icon: Lightbulb, label: 'Insights', path: '/insights' },
-    { icon: Blocks, label: 'Builder', path: '/builder' },
+    { icon: Blocks, label: 'Builder', path: '/builder'},
+    { icon: Blocks, label: 'Team', path: '/team' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

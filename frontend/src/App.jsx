@@ -8,9 +8,10 @@ import Search from "./pages/Search";
 import Repositories from "./pages/Repositories";
 import PullRequests from "./pages/PullRequests";
 import Insights from "./pages/Insights";
-import Builder from "./pages/Builder";
+import TeamBuilder from "./pages/Team";
 import Settings from "./pages/Settings";
 import Compare from "./pages/Compare";
+import Builder from "./pages/Builder";
 
 // Protected Routes Wrapper
 function ProtectedRoutes() {
@@ -92,8 +93,9 @@ function ProtectedRoutes() {
         <Route path="/repositories" element={<Repositories />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/pull-requests" element={<PullRequests />} />
-        <Route path="/insights" element={<Insights />} />
         <Route path="/builder" element={<Builder />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/team" element={<TeamBuilder />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>
