@@ -8,6 +8,7 @@ import dashboardRoutes from "./src/routes/dashboard.js";
 import teamsRoutes from "./src/routes/teams.js";
 import dashboardsRoutes from "./src/routes/dashboards.js";
 import repoRoutes from "./src/routes/repo.js";
+import insightsRoutes from "./src/routes/insights.js";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/teams", teamsRoutes);
 app.use("/api/dashboards", dashboardsRoutes);
 app.use("/api/repos", repoRoutes);
+app.use("/api/insights", insightsRoutes);
 
 // Root API route (updated with new endpoints)
 app.get("/", (req, res) => {

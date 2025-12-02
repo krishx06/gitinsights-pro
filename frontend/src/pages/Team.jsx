@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { 
-  Users, 
-  GitCommit, 
-  Trophy, 
+import {
+  Users,
+  GitCommit,
+  Trophy,
   TrendingUp,
   Plus,
   X,
@@ -33,24 +33,21 @@ const TeamBuilder = () => {
   const [githubToken, setGithubToken] = useState(null);
   const [error, setError] = useState(null);
   const [isRefreshingAnalytics, setIsRefreshingAnalytics] = useState(false);
-  
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const isFetchingRef = useRef(false); // Prevent duplicate fetches
 
-  // Initial load
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const isFetchingRef = useRef(false);
+
   useEffect(() => {
     fetchGithubToken();
     loadTeams();
   }, []);
 
-  // Fetch available contributors when modal opens
   useEffect(() => {
     if (showAddMemberModal && !availableContributors.length && githubToken) {
       fetchAvailableContributors();
     }
   }, [showAddMemberModal]);
 
-  // Filter contributors based on search
   useEffect(() => {
     if (searchQuery.trim()) {
       const filtered = availableContributors.filter(contributor =>
@@ -96,7 +93,7 @@ const TeamBuilder = () => {
 
   const fetchAvailableContributors = async () => {
     if (!githubToken || isFetchingRef.current) return;
-    
+
     isFetchingRef.current = true;
     setLoadingContributors(true);
     try {
@@ -133,7 +130,7 @@ const TeamBuilder = () => {
       });
 
       const contributorsArrays = await Promise.all(contributorPromises);
-      
+
       contributorsArrays.forEach(contributors => {
         contributors.forEach(contributor => {
           if (!contributorsMap.has(contributor.id)) {
@@ -153,7 +150,7 @@ const TeamBuilder = () => {
 
       const allContributors = Array.from(contributorsMap.values())
         .sort((a, b) => b.contributions - a.contributions);
-      
+
       setAvailableContributors(allContributors);
       setFilteredContributors(allContributors);
     } catch (error) {
@@ -164,6 +161,8 @@ const TeamBuilder = () => {
     }
   };
 
+  const [newProjectUrl, setNewProjectUrl] = useState('');
+
   const fetchTeamAnalytics = async (team = currentTeam) => {
     if (!team || !team.members || team.members.length === 0 || !githubToken || isRefreshingAnalytics) return;
 
@@ -173,21 +172,44 @@ const TeamBuilder = () => {
         try {
           const since = new Date();
           since.setDate(since.getDate() - 30);
-          
-          const searchQuery = `author:${member.username} committer-date:>=${since.toISOString().split('T')[0]}`;
-          const response = await axios.get(
-            `https://api.github.com/search/commits?q=${encodeURIComponent(searchQuery)}&per_page=1`,
-            {
-              headers: {
-                Authorization: `Bearer ${githubToken}`,
-                Accept: 'application/vnd.github+json',
-              },
-            }
-          );
+
+          let totalProjectCommits = 0;
+
+          if (team.projects && team.projects.length > 0) {
+            const projectPromises = team.projects.map(async (projectUrl) => {
+              const searchQuery = `repo:${projectUrl} author:${member.username} committer-date:>=${since.toISOString().split('T')[0]}`;
+              const response = await axios.get(
+                `https://api.github.com/search/commits?q=${encodeURIComponent(searchQuery)}&per_page=1`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${githubToken}`,
+                    Accept: 'application/vnd.github+json',
+                  },
+                }
+              );
+              return response.data.total_count || 0;
+            });
+
+            const projectCounts = await Promise.all(projectPromises);
+            totalProjectCommits = projectCounts.reduce((a, b) => a + b, 0);
+
+          } else {
+            const searchQuery = `author:${member.username} committer-date:>=${since.toISOString().split('T')[0]}`;
+            const response = await axios.get(
+              `https://api.github.com/search/commits?q=${encodeURIComponent(searchQuery)}&per_page=1`,
+              {
+                headers: {
+                  Authorization: `Bearer ${githubToken}`,
+                  Accept: 'application/vnd.github+json',
+                },
+              }
+            );
+            totalProjectCommits = response.data.total_count || 0;
+          }
 
           return {
             ...member,
-            commits: response.data.total_count || 0,
+            commits: totalProjectCommits,
           };
         } catch (error) {
           console.log(`Failed to fetch commits for ${member.username}`);
@@ -196,11 +218,9 @@ const TeamBuilder = () => {
       });
 
       const updatedMembers = await Promise.all(memberPromises);
-
-      // Calculate analytics WITHOUT updating currentTeam (this was causing the loop!)
       const totalCommits = updatedMembers.reduce((sum, member) => sum + (member.commits || 0), 0);
-      const avgVelocity = updatedMembers.length > 0 
-        ? Math.round(totalCommits / updatedMembers.length) 
+      const avgVelocity = updatedMembers.length > 0
+        ? Math.round(totalCommits / updatedMembers.length)
         : 0;
 
       const leaderboard = [...updatedMembers]
@@ -232,6 +252,60 @@ const TeamBuilder = () => {
       console.error('Failed to fetch team analytics:', error);
     } finally {
       setIsRefreshingAnalytics(false);
+    }
+  };
+
+  const addProject = async () => {
+    if (!currentTeam || !newProjectUrl.trim()) return;
+
+    if (!newProjectUrl.includes('/')) {
+      setError('Invalid format. Use owner/repo');
+      return;
+    }
+
+    const updatedProjects = [...(currentTeam.projects || []), newProjectUrl.trim()];
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${backendUrl}/api/teams/${currentTeam.id}`,
+        { projects: updatedProjects },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedTeam = response.data;
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      setCurrentTeam(updatedTeam);
+      setNewProjectUrl('');
+
+      setTimeout(() => fetchTeamAnalytics(updatedTeam), 500);
+    } catch (error) {
+      console.error('Failed to add project:', error);
+      setError('Failed to add project');
+    }
+  };
+
+  const removeProject = async (projectUrl) => {
+    if (!currentTeam) return;
+
+    const updatedProjects = (currentTeam.projects || []).filter(p => p !== projectUrl);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${backendUrl}/api/teams/${currentTeam.id}`,
+        { projects: updatedProjects },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedTeam = response.data;
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      setCurrentTeam(updatedTeam);
+
+      setTimeout(() => fetchTeamAnalytics(updatedTeam), 500);
+    } catch (error) {
+      console.error('Failed to remove project:', error);
+      setError('Failed to remove project');
     }
   };
 
@@ -286,8 +360,7 @@ const TeamBuilder = () => {
       const updatedTeam = response.data;
       setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
       setCurrentTeam(updatedTeam);
-      
-      // Fetch analytics manually after adding (won't trigger useEffect loop)
+
       setTimeout(() => fetchTeamAnalytics(updatedTeam), 500);
     } catch (error) {
       console.error('Failed to add member:', error);
@@ -311,8 +384,7 @@ const TeamBuilder = () => {
       const updatedTeam = response.data;
       setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
       setCurrentTeam(updatedTeam);
-      
-      // Recalculate analytics
+
       if (updatedMembers.length > 0) {
         setTimeout(() => fetchTeamAnalytics(updatedTeam), 500);
       } else {
@@ -557,18 +629,18 @@ const TeamBuilder = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={teamAnalytics?.contributionData || []} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis 
-                      dataKey="name" 
+                    <XAxis
+                      dataKey="name"
                       tickLine={false}
                       axisLine={false}
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                     />
-                    <YAxis 
+                    <YAxis
                       tickLine={false}
                       axisLine={false}
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                     />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
@@ -576,8 +648,8 @@ const TeamBuilder = () => {
                       }}
                       cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
                     />
-                    <Bar 
-                      dataKey="commits" 
+                    <Bar
+                      dataKey="commits"
                       fill="hsl(var(--primary))"
                       radius={[8, 8, 0, 0]}
                     />
@@ -627,55 +699,59 @@ const TeamBuilder = () => {
         </div>
       )}
 
-      {/* Project Health */}
-      {currentTeam.projects && currentTeam.projects.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Project Health</CardTitle>
-            <CardDescription>Status of active projects</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {currentTeam.projects.map((project) => (
-                <div key={project.id} className="p-4 bg-muted/50 rounded-lg border border-border">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">{project.name}</h3>
-                    <span className={cn(
-                      "px-2 py-1 text-xs rounded-full",
-                      project.status === 'active' && "bg-green-500/20 text-green-500"
-                    )}>
-                      {project.status}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-muted-foreground">Health</span>
-                        <span className="text-sm font-medium">{project.health}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-background rounded-full overflow-hidden">
-                        <div 
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            project.health >= 90 && "bg-green-500",
-                            project.health >= 70 && project.health < 90 && "bg-yellow-500",
-                            project.health < 70 && "bg-red-500"
-                          )}
-                          style={{ width: `${project.health}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users size={14} />
-                      {project.members} members
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Linked Projects Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Linked Projects</CardTitle>
+          <CardDescription>Track contributions to specific repositories</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newProjectUrl}
+                onChange={(e) => setNewProjectUrl(e.target.value)}
+                placeholder="Add repository (e.g., facebook/react)"
+                className="flex-1 px-4 py-2 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
+                onKeyPress={(e) => e.key === 'Enter' && addProject()}
+              />
+              <button
+                onClick={addProject}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+              >
+                <Plus size={16} />
+                Add
+              </button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+
+            {currentTeam.projects && currentTeam.projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentTeam.projects.map((project, index) => (
+                  <div key={index} className="p-4 bg-muted/50 rounded-lg border border-border flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                        <GitCommit size={16} />
+                      </div>
+                      <span className="font-medium">{project}</span>
+                    </div>
+                    <button
+                      onClick={() => removeProject(project)}
+                      className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-lg">
+                No projects linked. Analytics are tracking global contributions.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team Members Management */}
       <Card>
