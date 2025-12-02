@@ -30,9 +30,14 @@ export const toggleFavorite = async (id) => {
 };
 
 export const getCompareData = async (ids) => {
-    // Backend expects: /api/repos/:id/compare?other=ID2,ID3
     const [mainId, ...otherIds] = ids;
     const response = await api.get(`/api/repos/${mainId}/compare?other=${otherIds.join(",")}`);
+    return response.data;
+};
+
+// NEW: Get repository analytics
+export const getRepoAnalytics = async (months = 6) => {
+    const response = await api.get(`/api/repos/analytics/activity?months=${months}`);
     return response.data;
 };
 

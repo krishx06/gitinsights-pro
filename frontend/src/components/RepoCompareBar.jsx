@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight } from "lucide-react";
@@ -25,7 +24,7 @@ const RepoCompareBar = () => {
                     exit={{ y: 100, opacity: 0 }}
                     className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
                 >
-                    <div className="bg-popover border border-border text-popover-foreground px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-6 min-w-[320px]">
+                    <div className="bg-card border border-border text-foreground px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-6 min-w-[320px]">
                         <div className="flex items-center gap-3">
                             <span className="bg-primary text-primary-foreground font-bold w-6 h-6 rounded-full flex items-center justify-center text-sm">
                                 {count}
@@ -45,10 +44,11 @@ const RepoCompareBar = () => {
                             <button
                                 onClick={goToCompare}
                                 disabled={count < 2}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${count < 2
-                                    ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                    : "bg-foreground text-background hover:bg-foreground/90"
-                                    }`}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                                    count < 2
+                                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                }`}
                             >
                                 Compare <ArrowRight size={16} />
                             </button>

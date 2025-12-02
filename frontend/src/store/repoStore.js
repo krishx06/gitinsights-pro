@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getRepos, syncRepos, toggleFavorite } from "../lib/api";
+import { getRepos, syncRepos, toggleFavorite, getRepoAnalytics } from "../lib/api";
 
 const useRepoStore = create((set, get) => ({
     repos: [],
@@ -8,6 +8,11 @@ const useRepoStore = create((set, get) => ({
     searchQuery: "",
     selectedRepoIds: [],
     error: null,
+
+    // Analytics state
+    analytics: null,
+    analyticsLoading: false,
+    analyticsError: null,
 
     setSearchQuery: (query) => set({ searchQuery: query }),
 
@@ -27,14 +32,29 @@ const useRepoStore = create((set, get) => ({
         try {
             await syncRepos();
             await get().fetchRepos();
+            // Also refresh analytics after sync
+            await get().fetchAnalytics();
             set({ syncing: false });
         } catch (error) {
             set({ error: "Failed to sync repositories", syncing: false });
         }
     },
 
+    // NEW: Fetch analytics data
+    fetchAnalytics: async (months = 6) => {
+        set({ analyticsLoading: true, analyticsError: null });
+        try {
+            const data = await getRepoAnalytics(months);
+            set({ analytics: data, analyticsLoading: false });
+        } catch (error) {
+            set({
+                analyticsError: "Failed to fetch analytics",
+                analyticsLoading: false
+            });
+        }
+    },
+
     toggleRepoFavorite: async (id) => {
-        // Optimistic update
         set((state) => ({
             repos: state.repos.map((repo) =>
                 repo.id === id ? { ...repo, isFavorite: !repo.isFavorite } : repo
@@ -44,7 +64,6 @@ const useRepoStore = create((set, get) => ({
         try {
             await toggleFavorite(id);
         } catch (error) {
-            // Revert on failure
             set((state) => ({
                 repos: state.repos.map((repo) =>
                     repo.id === id ? { ...repo, isFavorite: !repo.isFavorite } : repo

@@ -1,95 +1,116 @@
-
 import React from "react";
-import { Star, GitFork, Circle, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
+import { Star, GitFork, Eye, Code2, ExternalLink, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const RepoCard = ({ repo, isSelected, onToggleSelect, onToggleFavorite }) => {
+    const navigate = useNavigate();
 
-
-    const onSelect = (e) => {
+    const handleViewAnalytics = (e) => {
         e.stopPropagation();
-        onToggleSelect(repo.id);
-    };
-
-    const onFav = (e) => {
-        e.stopPropagation();
-        onToggleFavorite(repo.id);
+        navigate(`/insights?repo=${repo.fullName}`);
     };
 
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            whileHover={{ y: -2 }}
-            className={`relative group p-5 rounded-xl border transition-all duration-200 ${isSelected
-                ? "bg-primary/10 border-primary/50"
-                : "bg-card border-border hover:border-primary/50 hover:shadow-lg"
-                }`}
+            exit={{ opacity: 0, scale: 0.9 }}
+            whileHover={{ y: -4 }}
+            onClick={() => onToggleSelect(repo.id)}
+            className={`relative bg-card border rounded-xl p-6 cursor-pointer transition-all ${
+                isSelected
+                    ? "border-primary shadow-lg shadow-primary/20"
+                    : "border-border hover:border-primary/50 hover:shadow-md"
+            }`}
         >
-            <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-3">
+            {/* Favorite Button */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(repo.id);
+                }}
+                className={`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+                    repo.isFavorite
+                        ? "bg-red-500/20 text-red-500"
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                }`}
+            >
+                <Heart size={16} className={repo.isFavorite ? "fill-current" : ""} />
+            </button>
 
-                    <div
-                        onClick={onSelect}
-                        className={`w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-colors ${isSelected
-                            ? "bg-primary border-primary text-primary-foreground"
-                            : "border-muted-foreground/30 hover:border-muted-foreground"
-                            }`}
-                    >
-                        {isSelected && <Check size={12} strokeWidth={3} />}
-                    </div>
+            {/* Repository Name */}
+            <div className="mb-3 pr-8">
+                <h3 className="text-lg font-semibold text-foreground truncate mb-1">
+                    {repo.name}
+                </h3>
+                <p className="text-xs text-muted-foreground truncate">{repo.fullName}</p>
+            </div>
 
-                    <h3 className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors cursor-pointer">
-                        {repo.name}
-                    </h3>
+            {/* Description */}
+            {repo.description && (
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[40px]">
+                    {repo.description}
+                </p>
+            )}
 
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
-                        {repo.isPrivate ? "Private" : "Public"}
+            {/* Stats */}
+            <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                    <Star size={14} />
+                    <span>{repo.stars}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <GitFork size={14} />
+                    <span>{repo.forks}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <Eye size={14} />
+                    <span>{repo.watchers}</span>
+                </div>
+            </div>
+
+            {/* Language & Topics */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+                {repo.language && (
+                    <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-md">
+                        <Code2 size={12} />
+                        {repo.language}
                     </span>
-                </div>
-
-
-                <button
-                    onClick={onFav}
-                    className={`p-2 rounded-full transition-all duration-200 ${repo.isFavorite
-                        ? "text-yellow-400 bg-yellow-400/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                        }`}
-                >
-                    <Star size={18} fill={repo.isFavorite ? "currentColor" : "none"} />
-                </button>
+                )}
+                {repo.isPrivate && (
+                    <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-md">
+                        Private
+                    </span>
+                )}
             </div>
 
-            <p className="text-muted-foreground text-sm mb-6 line-clamp-2 h-10">
-                {repo.description || "No description provided."}
-            </p>
+            {/* Action Button */}
+            <button
+                onClick={handleViewAnalytics}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-all"
+            >
+                <ExternalLink size={14} />
+                View Analytics
+            </button>
 
-
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-4">
-                    {repo.language && (
-                        <div className="flex items-center gap-1.5">
-                            <Circle size={10} className="text-blue-400 fill-blue-400" />
-                            <span>{repo.language}</span>
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-                        <Star size={14} />
-                        <span>{repo.stars}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-                        <GitFork size={14} />
-                        <span>{repo.forks}</span>
-                    </div>
+            {/* Selection Indicator */}
+            {isSelected && (
+                <div className="absolute top-4 left-4 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                    <svg
+                        className="w-3 h-3 text-primary-foreground"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path d="M5 13l4 4L19 7"></path>
+                    </svg>
                 </div>
-
-                <span>Updated {formatDistanceToNow(new Date(repo.updatedAt))} ago</span>
-            </div>
+            )}
         </motion.div>
     );
 };

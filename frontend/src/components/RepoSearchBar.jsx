@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import useRepoStore from "../store/repoStore";
@@ -6,7 +5,6 @@ import useRepoStore from "../store/repoStore";
 const RepoSearchBar = () => {
     const { setSearchQuery, fetchRepos } = useRepoStore();
     const [val, setVal] = useState("");
-
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -28,7 +26,7 @@ const RepoSearchBar = () => {
                 placeholder="Search repositories..."
                 value={val}
                 onChange={(e) => setVal(e.target.value)}
-                className="w-full bg-card border border-border text-foreground pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
+                className="w-full bg-background border border-border text-foreground pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
             />
         </div>
     );
