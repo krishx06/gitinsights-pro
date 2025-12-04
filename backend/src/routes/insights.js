@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const AI_SERVICE_URL = "http://localhost:8000";
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
 
 async function fetchAllCommits(accessToken, owner, repo) {
     let commits = [];
@@ -81,6 +81,9 @@ router.post("/:owner/:repo/analyze", authenticateJWT, async (req, res) => {
 
     } catch (error) {
         console.error("Insight Error:", error.message);
+        if (error.response) {
+            console.error("AI Service Response:", error.response.status, error.response.data);
+        }
         res.status(500).json({ error: "Failed to generate insights. Ensure AI service is running." });
     }
 });
