@@ -26,7 +26,10 @@ export const githubCallback = async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    if (!accessToken) throw new Error("No access token received");
+    if (!accessToken) {
+      console.error("GitHub Output:", JSON.stringify(tokenResponse.data));
+      throw new Error("No access token received");
+    }
 
     const userResponse = await axios.get("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${accessToken}` },
