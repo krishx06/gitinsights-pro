@@ -119,6 +119,7 @@ export const getMe = async (req, res) => {
         avatarUrl: true,
         email: true,
         githubId: true,
+        accessToken: true,
       },
     });
 
